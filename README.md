@@ -1,7 +1,8 @@
 # common-lox
-### _Your Name <your.name@example.com>_
+### _John Gibson <jg20019@gmail.com>_
 
-This is a project to do ... something.
+This repository tracks my progress implementing the Lox language found in 
+[Crafting Interpreters](http://craftinginterpreters.com/) using Common Lisp.
 
 ## License
 
