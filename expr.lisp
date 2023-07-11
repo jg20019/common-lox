@@ -1,13 +1,7 @@
 (in-package #:common-lox)
 
-#+nil
-(macroexpand-1
-  '(define-ast expr 
-              (binary (expr left) (token operator) (expr right))
-              (grouping (expr expression))
-              (literal value)
-              (unary (token operator) (expr right))))
-
+(eval-when (:compile-toplevel) 
+  
 (defun join-symbols (a b) 
   "Combine symbol a and b into a-b"
   (let ((a-str (string-downcase (symbol-name a)))
@@ -19,7 +13,6 @@
 
    (sym-keyword 'hello) => :hello"
   (read-from-string (concatenate 'string ":" (string-downcase (symbol-name str)))))
-
 
 (defun create-fields (field-desc) 
   "Use field desc to generate class fields.
@@ -44,10 +37,7 @@
   "Use base class and ast to generate a class"
   (let ((clsname (first ast)))
     `(defclass ,(join-symbols clsname base-class)
-       (,base-class) ,(mapcar #'create-fields (rest ast)))))
-
-(defun mappend (fn the-list) 
-  (apply #'append (mapcar fn the-list)))
+       (,base-class) ,(mapcar #'create-fields (rest ast))))))
 
 (defmacro define-ast (base-class &rest asts) 
   "Generate a base class and classes representing AST"
