@@ -56,3 +56,8 @@
                !*+-/=<> <= == // operators")
       (a-scanner (make-instance 'scanner :source source)))
   (scan-tokens a-scanner))
+
+#+nil
+(let* ((source "_abba123 and or")
+       (a-scanner (make-instance 'scanner :source source)))
+  (scan-tokens a-scanner))

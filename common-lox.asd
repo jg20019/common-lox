@@ -6,6 +6,7 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
+  :depends-on (:serapeum)
   :components ((:file "package")
                (:file "common-lox")
                (:file "token")

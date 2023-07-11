@@ -1,5 +1,24 @@
 (in-package #:common-lox)
 
+(defparameter *keywords* 
+  (serapeum:dict 
+    "and"    :and
+    "class"  :class
+    "else"   :else
+    "false"  :false
+    "for"    :for
+    "fun"    :fun
+    "if"     :if
+    "nil"    :nil
+    "or"     :or
+    "print"  :print
+    "return" :return
+    "super"  :super
+    "this"   :this
+    "true"   :true
+    "var"    :var
+    "while"  :while))
+
 (defclass scanner () 
   ((source :initarg :source :reader source)
    (tokens :initform '() :accessor tokens)
@@ -43,13 +62,73 @@
                  (t (add-token a-scanner :slash))))
       ((#\Space #\Tab) nil) ; Ignore spaces and tabs
       (#\Newline (incf (line a-scanner)))
-      (otherwise (lox-error (line a-scanner) "Unexpected character.")))))
+      (#\" (scan-string a-scanner))
+      (otherwise 
+        (cond ((digit-char-p c) (scan-number a-scanner))
+              ((alphap c) (scan-identifier a-scanner))
+              (t 
+               (lox-error (line a-scanner) "Unexpected character.")))))))
+
+(defmethod scan-identifier ((a-scanner scanner))
+  (loop while (alphanump (peek a-scanner)) do (advance a-scanner))
+  (with-slots (source start current) a-scanner
+    (let* ((text (subseq source start current))
+           (token-type (gethash text *keywords*)))
+      (add-token a-scanner (if (null token-type) :identifier token-type)))))
+
+(defmethod scan-string ((a-scanner scanner))
+  (loop while (and (not (at-end-p a-scanner))
+                   (char/= (peek a-scanner) #\"))
+        do (progn 
+             (when (char= (peek a-scanner) #\Newline)
+               (incf (line a-scanner)))
+             (advance a-scanner)))
+
+  (when (at-end-p a-scanner)
+    (lox-error (line a-scanner) "Unterminated string."))
+
+  ; The closing "
+  (advance a-scanner)
+
+  (with-slots (source start current) a-scanner
+    (let ((value (subseq source (+ start 1) (- current 1))))
+      (add-token a-scanner :string value))))
+
+(defmethod scan-number ((a-scanner scanner))
+  (loop while (digit-char-p (peek a-scanner))
+        do (advance a-scanner))
+
+  ; look for the fractional part
+  (when (and (char= #\. (peek a-scanner))
+           (digit-char-p (peek-next a-scanner)))
+      ; consume the "."
+      (advance a-scanner)
+      
+      (loop while (digit-char-p (peek a-scanner))
+            do (advance a-scanner)))
+
+  (with-slots (source start current) a-scanner
+    (add-token a-scanner :number
+               (serapeum:parse-float (subseq source start current)))))
 
 (defmethod peek ((a-scanner scanner))
   (with-slots (source current) a-scanner 
     (if (at-end-p a-scanner) 
         #\Nul
         (aref source current))))
+
+(defmethod peek-next ((a-scanner scanner))
+  (with-slots (source current) a-scanner 
+    (if (>= (+ current 1) (length source)) 
+        #\Nul
+        (aref source (+ current 1)))))
+
+(defun alphap (c)
+  (or (char= #\_ c)
+      (alpha-char-p c)))
+
+(defun alphanump (c)
+  (or (alphap c) (digit-char-p c)))
 
 (defmethod advance ((a-scanner scanner))
   "Returns current character and then advances current"
