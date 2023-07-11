@@ -8,6 +8,7 @@
   :serial t
   :depends-on (:serapeum)
   :components ((:file "package")
+               (:file "expr")
                (:file "common-lox")
                (:file "token")
                (:file "scanner")))

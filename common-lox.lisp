@@ -39,25 +39,3 @@
 (defun report (line where message) 
   (format *error-output* "~&[line ~a] Error~a: ~a" line where message)
   (setf *had-error* t))
-
-
-
-#+nil
-(let ((a-scanner (make-instance 'scanner :source "!!=<<=>>====")))
-  (scan-tokens a-scanner))
-
-#+nil
-(let ((a-scanner (make-instance 'scanner :source "+//adlskaffsjal;dfafs")))
-  (scan-tokens a-scanner))
-
-#+nil
-(let* ((source "// this is a comment
-               (( )){} // grouping stuff
-               !*+-/=<> <= == // operators")
-      (a-scanner (make-instance 'scanner :source source)))
-  (scan-tokens a-scanner))
-
-#+nil
-(let* ((source "_abba123 and or")
-       (a-scanner (make-instance 'scanner :source source)))
-  (scan-tokens a-scanner))
