@@ -8,7 +8,7 @@
         (b-str (string-downcase (symbol-name b))))
     (read-from-string (concatenate 'string a-str "-" b-str))))
 
-(defun sym-keyword (str)
+(defun sym-keyword (sym)
   "Convert sym to keyword 
 
    (sym-keyword 'hello) => :hello"
@@ -33,24 +33,48 @@
             :initarg (sym-keyword field-desc)
             :accessor field-desc)))
 
+  (defun create-class-name (base-class clsname) 
+    (join-symbols clsname base-class))
+
 (defun create-ast (base-class ast)
   "Use base class and ast to generate a class"
   (let ((clsname (first ast)))
     `(defclass ,(join-symbols clsname base-class)
-       (,base-class) ,(mapcar #'create-fields (rest ast))))))
+       (,base-class) ,(mapcar #'create-fields (rest ast)))))
+
+(defun field-names (field-desc) 
+  "Get field-name from field-desc which can be of the form
+   field-name or (type field-name)"
+  (if (listp field-desc) (second field-desc) field-desc))
+
+(defun create-constructors (base-class ast)
+  (let ((constructor-name (create-class-name base-class (first ast)))
+        (fields (mapcar #'field-names (rest ast))))
+    `(defun ,constructor-name (&key ,@fields)
+       (make-instance ',constructor-name ,@(loop for field in fields appending (list (sym-keyword field) field)))))))
+
+#+nil
+(binary (expr left) (token operator) (expr right))
+
+#+nil 
+(defun binary-expr (&key left operator right)
+  (make-instance 'binary :left left :operator operator :right right))
 
 (defmacro define-ast (base-class &rest asts) 
   "Generate a base class and classes representing AST"
   `(progn 
      (defclass ,base-class () ())
 
-     ,@(loop for ast in asts collect (create-ast base-class ast))))
+     ,@(loop for ast in asts appending 
+             (list (create-ast base-class ast)
+                   (create-constructors base-class ast)))))
 
-(define-ast expr
-            (binary (expr left) (token operator) (expr right))
-            (grouping (expr expression))
-            (literal value)
-            (unary (token operator) (expr right)))
+(define-ast 
+  expr
+  (binary (expr left) (token operator) (expr right))
+  (grouping (expr expression))
+  (literal value)
+  (unary (token operator) (expr right)))
 
 (defun parenthesize (name &rest exprs) 
   (format nil "(~a ~{~a~^ ~})" name exprs))
