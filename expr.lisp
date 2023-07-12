@@ -53,12 +53,7 @@
     `(defun ,constructor-name (&key ,@fields)
        (make-instance ',constructor-name ,@(loop for field in fields appending (list (sym-keyword field) field)))))))
 
-#+nil
-(binary (expr left) (token operator) (expr right))
 
-#+nil 
-(defun binary-expr (&key left operator right)
-  (make-instance 'binary :left left :operator operator :right right))
 
 (defmacro define-ast (base-class &rest asts) 
   "Generate a base class and classes representing AST"
