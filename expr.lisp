@@ -12,7 +12,7 @@
   "Convert sym to keyword 
 
    (sym-keyword 'hello) => :hello"
-  (read-from-string (concatenate 'string ":" (string-downcase (symbol-name str)))))
+  (read-from-string (concatenate 'string ":" (string-downcase (symbol-name sym)))))
 
 (defun create-fields (field-desc) 
   "Use field desc to generate class fields.
