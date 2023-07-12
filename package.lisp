@@ -2,7 +2,8 @@
 
 (defpackage #:common-lox
   (:use #:cl) 
-  (:export :while))
+  (:export :token 
+           :while))
 
 (defpackage #:common-lox.scanning 
   (:use #:cl #:common-lox) 
