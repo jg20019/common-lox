@@ -1,4 +1,4 @@
-(in-package #:common-lox)
+(in-package #:common-lox.scanning)
 
 (defparameter *keywords* 
   (serapeum:dict 
@@ -25,6 +25,9 @@
    (start :initform 0 :accessor start)
    (current :initform 0 :accessor current)
    (line :initform 1 :accessor line)))
+
+(defun scanner (&key source) 
+  (make-instance 'scanner :source source))
 
 
 (defmethod at-end-p ((a-scanner scanner))
