@@ -42,17 +42,14 @@
     `(defclass ,(join-symbols clsname base-class)
        (,base-class) ,(mapcar #'create-fields (rest ast)))))
 
-(defun field-names (field-desc) 
-  "Get field-name from field-desc which can be of the form
+(defun field-name (field-desc) 
+  "Get field name from field-desc which can be of the form
    field-name or (type field-name)"
   (if (listp field-desc) (second field-desc) field-desc))
 
-(defun create-constructors (base-class ast)
-  (let ((constructor-name (create-class-name base-class (first ast)))
-        (fields (mapcar #'field-names (rest ast))))
-    `(defun ,constructor-name (&key ,@fields)
-       (make-instance ',constructor-name ,@(loop for field in fields appending (list (sym-keyword field) field)))))))
-
+  (defun create-constructor (cls-name field-names)
+    `(defun ,cls-name (&key ,@field-names)
+       (make-instance ',cls-name ,@(loop for field in field-names appending (list (sym-keyword field) field))))))
 
 
 (defmacro define-ast (base-class &rest asts) 
@@ -61,8 +58,9 @@
      (defclass ,base-class () ())
 
      ,@(loop for ast in asts appending 
-             (list (create-ast base-class ast)
-                   (create-constructors base-class ast)))))
+             (let ((clsname (join-symbols (first ast) base-class)))
+               (list (create-ast base-class ast)
+                     (create-constructor clsname (mapcar #'field-name (rest ast))))))))
 
 (define-ast 
   expr
