@@ -36,11 +36,10 @@
   (defun create-class-name (base-class clsname) 
     (join-symbols clsname base-class))
 
-(defun create-ast (base-class ast)
-  "Use base class and ast to generate a class"
-  (let ((clsname (first ast)))
-    `(defclass ,(join-symbols clsname base-class)
-       (,base-class) ,(mapcar #'create-fields (rest ast)))))
+  (defun create-class (clsname base-class ast)
+    "Create class based on ast"
+    `(defclass ,clsname
+       (,base-class) ,(mapcar #'create-fields (rest ast))))
 
 (defun field-name (field-desc) 
   "Get field name from field-desc which can be of the form
@@ -59,7 +58,7 @@
 
      ,@(loop for ast in asts appending 
              (let ((clsname (join-symbols (first ast) base-class)))
-               (list (create-ast base-class ast)
+               (list (create-class clsname base-class ast)
                      (create-constructor clsname (mapcar #'field-name (rest ast))))))))
 
 (define-ast 
