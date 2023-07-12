@@ -39,7 +39,7 @@
         do (progn 
              (setf (start a-scanner) (current a-scanner))
              (scan-token a-scanner)))
-  (push (make-instance 'token :type :eof :lexeme "" :literal nil :line (line a-scanner)) (tokens a-scanner))
+  (push (common-lox:token :type :eof :lexeme "" :literal nil :line (line a-scanner)) (tokens a-scanner))
   (reverse (tokens a-scanner)))
 
 (defmethod scan-token ((a-scanner scanner))
@@ -148,4 +148,4 @@
 (defmethod add-token ((a-scanner scanner) type &optional (literal nil))
   (with-slots (source start current tokens line) a-scanner 
     (let ((text (subseq source start current)))
-      (push (make-instance 'token :type type :lexeme text :literal literal :line line) tokens))))
+      (push (common-lox:token :type type :lexeme text :literal literal :line line) tokens))))

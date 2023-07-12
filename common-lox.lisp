@@ -28,8 +28,8 @@
                (setf *had-error* nil)))))
 
 (defun run (source) 
-  (let* ((scanner (make-instance 'scanner :input source))
-         (tokens (scan-tokens scanner)))
+  (let* ((scanner (common-lox.scanning:scanner :source source))
+         (tokens (common-lox.scanning:scan-tokens scanner)))
     (dolist (token tokens) 
       (format t "~&~a" token))))
 
