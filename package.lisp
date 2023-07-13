@@ -4,6 +4,9 @@
   (:use #:cl) 
   (:export 
     
+    ; toplevel
+    :main 
+    
     ; error functions
     :lox-error 
     
