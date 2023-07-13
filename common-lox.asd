@@ -14,3 +14,11 @@
                (:file "scanner")
                (:file "expr")
                (:file "parser")))
+
+
+(asdf:defsystem #:common-lox/bin
+  :depends-on (:common-lox :with-user-abort :adopt)
+  :components ((:file "main"))
+  :build-operation program-op
+  :build-pathname #p"~/.lisp-bin/clox"
+  :entry-point "common-lox:main")
