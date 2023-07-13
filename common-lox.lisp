@@ -2,17 +2,10 @@
 
 (in-package #:common-lox)
 
+#+nil
 (declaim (optimize (speed 0) (space 0) (debug 3)))
 
 (defparameter *had-error* nil "Did the interpreter encounter an error?")
-
-(defun main (args) 
-  (cond ((> (length args) 1) 
-         (format t "Usage: common-lox [script]")
-         :exit) 
-        ((= (length args) 1)
-         (run-file (first args)))
-        (t (run-prompt))))
 
 (defun run-file (path) 
   (with-open-file (input path :direction :input) 
