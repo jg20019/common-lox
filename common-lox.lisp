@@ -29,12 +29,18 @@
 
 (defun run (source) 
   (let* ((scanner (common-lox.scanning:scanner :source source))
-         (tokens (common-lox.scanning:scan-tokens scanner)))
-    (dolist (token tokens) 
-      (format t "~&~a" token))))
+         (tokens (common-lox.scanning:scan-tokens scanner))
+         (parser (common-lox.parsing:parser (coerce  tokens 'vector)))
+         (expression (common-lox.parsing:parse parser)))
+    (when *had-error* (return-from run))
+    (format t "~a~%" expression)))
 
-(defun lox-error (line message) 
-  (report line "" message))
+(defun lox-error (token message) 
+  (if (equal (token-type token) :eof)
+      (report (line token) " at end" message)
+      (report (line token) 
+              (format nil " at '~s'" (lexeme token))
+              message)))
 
 (defun report (line where message) 
   (format *error-output* "~&[line ~a] Error~a: ~a" line where message)

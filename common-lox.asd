@@ -12,4 +12,5 @@
                (:file "common-lox")
                (:file "token")
                (:file "scanner")
-               (:file "parser")))
+               (:file "parser")
+               (:file "macros")))
