@@ -12,10 +12,9 @@
                (:file "token")
                (:file "common-lox")
                (:file "runtime-error")
-               (:file "scanner")
                (:file "expr")
+               (:file "scanner")
                (:file "parser")
-               (:file "evaluate")
                (:file "interpreter")))
 
 
