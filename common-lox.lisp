@@ -2,7 +2,6 @@
 
 (in-package #:common-lox)
 
-#+nil
 (declaim (optimize (speed 0) (space 0) (debug 3)))
 
 (defparameter *had-error* nil "Did the interpreter encounter an error?")
@@ -15,6 +14,7 @@
 (defun run-prompt () 
   (loop do (progn 
              (format t "~&> ")
+             (finish-output)
              (let ((line (read-line)))
                (when (or (null line) (string-equal line "")) (return))
                (run line)
@@ -26,7 +26,8 @@
          (parser (common-lox.parsing:parser (coerce  tokens 'vector)))
          (expression (common-lox.parsing:parse parser)))
     (when *had-error* (return-from run))
-    (format t "~a~%" expression)))
+    (format t "~a~%" expression)
+    (finish-output)))
 
 (defun lox-error (token message) 
   (if (equal (token-type token) :eof)
