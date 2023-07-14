@@ -9,9 +9,7 @@
 
 (defmethod parse ((parser parser))
   (handler-case (expression parser)
-    (parse-error (c)
-                 (declare  (ignore c))
-                 nil)))
+    (parse-error nil)))
 
 (defmethod expression ((parser parser))
   (equality parser))
