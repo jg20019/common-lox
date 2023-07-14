@@ -39,7 +39,7 @@
         do (progn 
              (setf (start a-scanner) (current a-scanner))
              (scan-token a-scanner)))
-  (push (common-lox:token :type :eof :lexeme "" :literal nil :line (line a-scanner)) (tokens a-scanner))
+  (push (token* :type :eof :lexeme "" :literal nil :line (line a-scanner)) (tokens a-scanner))
   (reverse (tokens a-scanner)))
 
 (defmethod scan-token ((a-scanner scanner))
@@ -88,7 +88,7 @@
              (advance a-scanner)))
 
   (when (at-end-p a-scanner)
-    (lox-error (line a-scanner) "Unterminated string."))
+    (lox-error (peek a-scanner) "Unterminated string."))
 
   ; The closing "
   (advance a-scanner)
@@ -148,4 +148,4 @@
 (defmethod add-token ((a-scanner scanner) type &optional (literal nil))
   (with-slots (source start current tokens line) a-scanner 
     (let ((text (subseq source start current)))
-      (push (common-lox:token :type type :lexeme text :literal literal :line line) tokens))))
+      (push (token* :type type :lexeme text :literal literal :line line) tokens))))

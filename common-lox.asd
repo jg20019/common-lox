@@ -6,15 +6,17 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on (:serapeum)
+  :depends-on (:serapeum :str)
   :components ((:file "package")
                (:file "macros")
-               (:file "common-lox")
                (:file "token")
+               (:file "common-lox")
+               (:file "runtime-error")
                (:file "scanner")
                (:file "expr")
                (:file "parser")
-               (:file "evaluate")))
+               (:file "evaluate")
+               (:file "interpreter")))
 
 
 (asdf:defsystem #:common-lox/bin

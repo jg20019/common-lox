@@ -26,7 +26,7 @@
 
     
     ; tokens
-    :token
+    :token* ; named this way to avoid conflict with generic method on runtime error
     :lexeme
     :token-type
     :literal
