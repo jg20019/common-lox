@@ -35,10 +35,9 @@
   (>= (current a-scanner) (length (source a-scanner))))
 
 (defmethod scan-tokens ((a-scanner scanner))
-  (loop while (not (at-end-p a-scanner))
-        do (progn 
-             (setf (start a-scanner) (current a-scanner))
-             (scan-token a-scanner)))
+  (while (not (at-end-p a-scanner))
+    (setf (start a-scanner) (current a-scanner))
+    (scan-token a-scanner))
   (push (token* :type :eof :lexeme "" :literal nil :line (line a-scanner)) (tokens a-scanner))
   (reverse (tokens a-scanner)))
 
@@ -59,9 +58,9 @@
       (#\= (add-token a-scanner (if (match a-scanner #\=) :equal-equal :equal)))
       (#\< (add-token a-scanner (if (match a-scanner #\=) :less-equal :less)))
       (#\> (add-token a-scanner (if (match a-scanner #\=) :greater-equal :greater)))
-      (#\/ (cond ((match a-scanner #\/) (loop while (and (not (at-end-p a-scanner))
-                                                         (char/= (peek a-scanner) #\newline))
-                                              do (advance a-scanner)))
+      (#\/ (cond ((match a-scanner #\/) 
+                  (while (and (not (at-end-p a-scanner)) (char/= (peek a-scanner) #\newline))
+                    (advance a-scanner)))
                  (t (add-token a-scanner :slash))))
       ((#\Space #\Tab) nil) ; Ignore spaces and tabs
       (#\Newline (incf (line a-scanner)))
@@ -73,19 +72,18 @@
                (lox-error (line a-scanner) "Unexpected character.")))))))
 
 (defmethod scan-identifier ((a-scanner scanner))
-  (loop while (alphanump (peek a-scanner)) do (advance a-scanner))
+  (while (alphanump (peek a-scanner)) (advance a-scanner))
   (with-slots (source start current) a-scanner
     (let* ((text (subseq source start current))
            (token-type (gethash text *keywords*)))
       (add-token a-scanner (if (null token-type) :identifier token-type)))))
 
 (defmethod scan-string ((a-scanner scanner))
-  (loop while (and (not (at-end-p a-scanner))
-                   (char/= (peek a-scanner) #\"))
-        do (progn 
-             (when (char= (peek a-scanner) #\Newline)
-               (incf (line a-scanner)))
-             (advance a-scanner)))
+  (while (and (not (at-end-p a-scanner))
+              (char/= (peek a-scanner) #\"))
+    (when (char= (peek a-scanner) #\Newline)
+      (incf (line a-scanner)))
+    (advance a-scanner))
 
   (when (at-end-p a-scanner)
     (lox-error (peek a-scanner) "Unterminated string."))
@@ -98,8 +96,8 @@
       (add-token a-scanner :string value))))
 
 (defmethod scan-number ((a-scanner scanner))
-  (loop while (digit-char-p (peek a-scanner))
-        do (advance a-scanner))
+  (while (digit-char-p (peek a-scanner))
+    (advance a-scanner))
 
   ; look for the fractional part
   (when (and (char= #\. (peek a-scanner))
@@ -107,8 +105,8 @@
       ; consume the "."
       (advance a-scanner)
       
-      (loop while (digit-char-p (peek a-scanner))
-            do (advance a-scanner)))
+      (while (digit-char-p (peek a-scanner))
+        (advance a-scanner)))
 
   (with-slots (source start current) a-scanner
     (add-token a-scanner :number
