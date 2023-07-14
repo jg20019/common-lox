@@ -26,7 +26,7 @@
          (parser (common-lox.parsing:parser (coerce  tokens 'vector)))
          (expression (common-lox.parsing:parse parser)))
     (when *had-error* (return-from run))
-    (format t "~a~%" expression)
+    (format t "~a~%" (evaluate expression))
     (finish-output)))
 
 (defun lox-error (token message) 

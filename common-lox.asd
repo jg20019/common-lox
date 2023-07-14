@@ -13,7 +13,8 @@
                (:file "token")
                (:file "scanner")
                (:file "expr")
-               (:file "parser")))
+               (:file "parser")
+               (:file "evaluate")))
 
 
 (asdf:defsystem #:common-lox/bin
