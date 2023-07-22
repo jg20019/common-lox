@@ -2,14 +2,22 @@
 
 (defclass interpreter () ())
 
-(defmethod interpret ((interpreter interpreter) (expression expr))
+(defmethod interpret ((interpreter interpreter) statements)
   (handler-case 
-    (format t "~a~%" (stringify (evaluate expression)))
+    (dolist (statement statements) 
+      (evaluate statement))
     (runtime-error (e) 
                    (runtime-error e))))
 
 (defun interpreter () 
   (make-instance 'interpreter))
+
+(defmethod evaluate ((stmt expression-stmt))
+  (evaluate (expression stmt)))
+
+(defmethod evaluate ((stmt print-stmt))
+  (let ((value (evaluate (expression stmt))))
+    (format t "~a~%" (stringify value))))
 
 (defmethod evaluate ((expr literal-expr)) 
   (value expr))
@@ -69,6 +77,7 @@
 (defun check-number-operands (operator left right)
   (unless (and (numberp left) (numberp right))
     (error 'runtime-error :token operator :message "Operands must be numbers.")))
+
 (defun stringify (object) 
   (cond ((null object) "nil")
         ((numberp object) (let ((text (format nil "~a" object)))

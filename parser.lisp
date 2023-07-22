@@ -8,11 +8,29 @@
   (make-instance 'parser :tokens tokens))
 
 (defmethod parse ((parser parser))
-  (handler-case (expression parser)
+  (handler-case 
+    (let (statements) 
+      (while (not (at-end-p parser))
+        (push (statement parser) statements))
+      (nreverse statements))
     (parse-error nil)))
 
 (defmethod expression ((parser parser))
   (equality parser))
+
+(defmethod statement ((parser parser))
+  (cond ((match parser :print) (print-statement parser))
+        (t (expression-statement parser))))
+
+(defmethod print-statement ((parser parser))
+  (let ((value (expression parser)))
+    (consume parser :semicolon "Expect ';' after value.")
+    (print-stmt :expression value)))
+
+(defmethod expression-statement ((parser parser))
+  (let ((expr (expression parser)))
+    (consume parser :semicolon "Expect ';' after expression")
+    (expression-stmt :expression expr)))
 
 (defmethod equality ((parser parser))
   (let ((expr (comparison parser)))
@@ -86,7 +104,7 @@
   (previous parser))
 
 (defmethod at-end-p ((parser parser))
-  (equal (peek parser) :eof))
+  (equal (token-type (peek parser)) :eof))
 
 (defmethod peek ((parser parser))
   (aref (tokens parser) (current parser)))

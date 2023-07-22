@@ -24,6 +24,9 @@
 
     :unary-expr
 
+    ; statements
+    :print-stmt
+    :expression-stmt
     
     ; tokens
     :token* ; named this way to avoid conflict with generic method on runtime error

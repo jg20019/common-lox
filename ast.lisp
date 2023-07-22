@@ -6,3 +6,8 @@
   (grouping (expr expression))
   (literal value)
   (unary (token operator) (expr right)))
+
+(define-ast 
+  stmt
+  (expression (expr expression))
+  (print (expr expression)))

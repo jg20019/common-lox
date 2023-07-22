@@ -26,10 +26,10 @@
   (let* ((scanner (common-lox.scanning:scanner :source source))
          (tokens (common-lox.scanning:scan-tokens scanner))
          (parser (common-lox.parsing:parser (coerce  tokens 'vector)))
-         (expression (common-lox.parsing:parse parser))
+         (statements (common-lox.parsing:parse parser))
          (interpreter (interpreter)))
     (when *had-error* (return-from run))
-    (interpret interpreter expression)
+    (interpret interpreter statements)
     (finish-output)))
 
 (defmethod lox-error ((token token) message) 

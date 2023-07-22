@@ -1,6 +1,6 @@
 (in-package #:common-lox)
 
-(eval-when (:compile-toplevel) 
+(eval-when (:compile-toplevel :load-toplevel :execute) 
   
 (defun join-symbols (a b) 
   "Combine symbol a and b into a-b"
