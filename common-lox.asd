@@ -16,6 +16,7 @@
                (:file "printer")
                (:file "scanner")
                (:file "parser")
+               (:file "environment")
                (:file "interpreter")))
 
 

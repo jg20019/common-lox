@@ -23,10 +23,14 @@
     :value
 
     :unary-expr
+    :variable-expr
 
     ; statements
     :print-stmt
     :expression-stmt
+    :var-stmt
+    :name
+    :initializer
     
     ; tokens
     :token* ; named this way to avoid conflict with generic method on runtime error

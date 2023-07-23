@@ -11,12 +11,21 @@
   (handler-case 
     (let (statements) 
       (while (not (at-end-p parser))
-        (push (statement parser) statements))
+        (push (parse-declaration parser) statements))
       (nreverse statements))
     (parse-error nil)))
 
 (defmethod expression ((parser parser))
   (equality parser))
+
+(defmethod parse-declaration ((parser parser))
+  (handler-case 
+    (if (match parser :var) 
+        (var-declaration parser)
+        (statement parser))
+    (parse-error ()
+      (synchronize parser)
+      nil)))
 
 (defmethod statement ((parser parser))
   (cond ((match parser :print) (print-statement parser))
@@ -26,6 +35,15 @@
   (let ((value (expression parser)))
     (consume parser :semicolon "Expect ';' after value.")
     (print-stmt :expression value)))
+
+(defmethod var-declaration ((parser parser))
+  (let ((name (consume parser :identifier "Expect variable name."))
+        initializer)
+    (when (match parser :equal)
+        (setf initializer (expression parser)))
+
+    (consume parser :semicolon "Expect ';' after variable declaration.")
+    (var-stmt :name name :initializer initializer)))
 
 (defmethod expression-statement ((parser parser))
   (let ((expr (expression parser)))
@@ -77,6 +95,8 @@
         ((match parser :nil) (literal-expr :value nil))
         ((match parser :number :string) 
          (literal-expr :value (literal (previous parser))))
+        ((match parser :identifier) 
+         (variable-expr :name (previous parser)))
         ((match parser :left-paren) 
          (let ((expr (expression parser)))
            (consume parser :right-paren "Expect ')' after expression.")

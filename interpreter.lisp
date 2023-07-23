@@ -1,39 +1,51 @@
 (in-package #:common-lox)
 
-(defclass interpreter () ())
+(defclass interpreter ()
+  ((environment :initform (make-instance 'environment) 
+                :accessor environment)))
 
 (defmethod interpret ((interpreter interpreter) statements)
   (handler-case 
     (dolist (statement statements) 
-      (evaluate statement))
+      (evaluate interpreter statement))
     (runtime-error (e) 
-                   (runtime-error e))))
+      (runtime-error e))))
 
 (defun interpreter () 
   (make-instance 'interpreter))
 
-(defmethod evaluate ((stmt expression-stmt))
-  (evaluate (expression stmt)))
+(defmethod evaluate ((interpreter interpreter) (stmt expression-stmt))
+  (evaluate interpreter (expression stmt)))
 
-(defmethod evaluate ((stmt print-stmt))
-  (let ((value (evaluate (expression stmt))))
+(defmethod evaluate ((interpreter interpreter) (stmt print-stmt))
+  (let ((value (evaluate interpreter (expression stmt))))
     (format t "~a~%" (stringify value))))
 
-(defmethod evaluate ((expr literal-expr)) 
+(defmethod evaluate ((interpreter interpreter) (stmt var-stmt))
+  (let (value)
+    (when (initializer stmt)
+      (setf value (evaluate interpreter (initializer stmt))))
+    (define (environment interpreter) (lexeme (name stmt)) value)
+    nil))
+
+(defmethod evaluate ((interpreter interpreter) (expr literal-expr)) 
   (value expr))
 
-(defmethod evaluate ((expr grouping-expr))
-  (evaluate (expression  expr)))
+(defmethod evaluate ((interpreter interpreter) (expr grouping-expr))
+  (evaluate interpreter (expression  expr)))
 
-(defmethod evaluate ((expr unary-expr))
+(defmethod evaluate ((interpreter interpreter) (expr unary-expr))
   (let ((right (evaluate (right expr))))
     (case (token-type (operator expr))
       (:minus (progn (check-number-operand (operator expr) right) (- right)))
       (:bang (not right)))))
 
-(defmethod evaluate ((expr binary-expr))
-  (let ((left (evaluate (left expr)))
-        (right (evaluate (right expr)))
+(defmethod evaluate ((interpreter interpreter) (expr variable-expr))
+  (getValue (environment interpreter) (name expr)))
+
+(defmethod evaluate ((interpreter interpreter) (expr binary-expr))
+  (let ((left (evaluate interpreter (left expr)))
+        (right (evaluate interpreter (right expr)))
         (operator (operator expr)))
     (case (token-type operator)
       (:minus 
