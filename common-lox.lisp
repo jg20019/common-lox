@@ -14,20 +14,22 @@
     (when *had-runtime-error* :runtime-error)))
 
 (defun run-prompt () 
-  (loop do (progn 
-             (format t "~&> ")
-             (finish-output)
-             (let ((line (read-line)))
-               (when (or (null line) (string-equal line "")) (return))
-               (run line)
-               (setf *had-error* nil)))))
+  (let ((environment (make-instance 'environment)))
+    (loop do (progn 
+               (format t "~&> ")
+               (finish-output)
+               (let ((line (read-line)))
+                 (when (or (null line) (string-equal line "")) (return))
+                 (run line :env environment)
+                 (setf *had-error* nil))))))
 
-(defun run (source) 
+(defun run (source &key (env (make-instance 'environment))) 
   (let* ((scanner (common-lox.scanning:scanner :source source))
          (tokens (common-lox.scanning:scan-tokens scanner))
          (parser (common-lox.parsing:parser (coerce  tokens 'vector)))
          (statements (common-lox.parsing:parse parser))
-         (interpreter (interpreter)))
+         (interpreter (make-instance 'interpreter :environment env)))
+    (finish-output)
     (when *had-error* (return-from run))
     (interpret interpreter statements)
     (finish-output)))
@@ -48,4 +50,5 @@
 
 (defun report (line where message) 
   (format *error-output* "~&[line ~a] Error~a: ~a" line where message)
+  (finish-output)
   (setf *had-error* t))

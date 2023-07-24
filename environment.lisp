@@ -8,6 +8,15 @@
 (defmethod define ((env environment) name value)
   (setf (gethash name (env-values env)) value))
 
+(defmethod assign ((env environment) name value)
+  (multiple-value-bind (_ foundp) (gethash (lexeme name) (env-values env))
+    (declare (ignore _))
+    (if foundp 
+        (setf (gethash (lexeme name) (env-values env)) value)
+        (error 'runtime-error
+               :token name
+               :message (format nil "Undefined variable '~a'." (lexeme name))))))
+
 (defmethod getValue ((env environment) name)
   (multiple-value-bind (value foundp) (gethash (lexeme name) (env-values env))
     (if foundp 

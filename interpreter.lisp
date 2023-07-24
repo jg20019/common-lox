@@ -2,6 +2,7 @@
 
 (defclass interpreter ()
   ((environment :initform (make-instance 'environment) 
+                :initarg :environment
                 :accessor environment)))
 
 (defmethod interpret ((interpreter interpreter) statements)
@@ -27,6 +28,11 @@
       (setf value (evaluate interpreter (initializer stmt))))
     (define (environment interpreter) (lexeme (name stmt)) value)
     nil))
+
+(defmethod evaluate ((interpreter interpreter) (expr assign-expr))
+  (let ((value (evaluate interpreter (value expr))))
+    (assign (environment interpreter) (name expr) value)
+    value))
 
 (defmethod evaluate ((interpreter interpreter) (expr literal-expr)) 
   (value expr))

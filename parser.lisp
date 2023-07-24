@@ -16,7 +16,7 @@
     (parse-error nil)))
 
 (defmethod expression ((parser parser))
-  (equality parser))
+  (assignment parser))
 
 (defmethod parse-declaration ((parser parser))
   (handler-case 
@@ -49,6 +49,17 @@
   (let ((expr (expression parser)))
     (consume parser :semicolon "Expect ';' after expression")
     (expression-stmt :expression expr)))
+
+(defmethod assignment ((parser parser)) 
+  (let ((expr (equality parser)))
+    (when (match parser :equal)
+      (let ((equals (previous parser))
+            (value (assignment parser)))
+        (when (equal (type-of expr) 'variable-expr)
+          (let ((name (name expr)))
+            (return-from assignment (assign-expr :name name :value value))))
+        (error "Invalid assignment target")))
+    expr))
 
 (defmethod equality ((parser parser))
   (let ((expr (comparison parser)))

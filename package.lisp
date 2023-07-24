@@ -11,6 +11,10 @@
     :lox-error 
     
     ; expressions
+    :assign-expr
+    :token
+    :expr 
+    
     :binary-expr
     :left 
     :right

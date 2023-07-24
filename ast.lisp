@@ -2,6 +2,7 @@
 
 (define-ast 
   expr
+  (assign (token name) (expr value))
   (binary (expr left) (token operator) (expr right))
   (grouping (expr expression))
   (literal value)
