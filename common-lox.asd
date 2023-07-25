@@ -6,7 +6,7 @@
   :license  "Specify license here"
   :version "0.0.1"
   :serial t
-  :depends-on (:serapeum :str)
+  :depends-on (:serapeum :str :with-user-abort)
   :components ((:file "package")
                (:file "macros")
                (:file "token")

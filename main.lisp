@@ -1,8 +1,8 @@
 (in-package :common-lox)
 
 (defmacro exit-on-ctrl-c (&body body)
-  `(handler-case (with-user-abort:with-user-abort)
-     (progn ,@body)))
+  `(handler-case (with-user-abort:with-user-abort (progn ,@body))
+     (with-user-abort:user-abort () (sb-ext:exit :code 130))))
 
 (defun main* (args) 
   (cond ((> (length args) 1) 
@@ -21,9 +21,10 @@
 
 (defun main ()
   (sb-ext:disable-debugger)
-  (handler-case 
-    (multiple-value-bind (arguments options) (adopt:parse-options *ui*)
-      (declare (ignore options))
-      (main* arguments))
-    (error (c)
-           (adopt:print-error-and-exit c))))
+  (exit-on-ctrl-c 
+    (handler-case 
+      (multiple-value-bind (arguments options) (adopt:parse-options *ui*)
+        (declare (ignore options))
+        (main* arguments))
+      (error (c)
+             (adopt:print-error-and-exit c)))))
