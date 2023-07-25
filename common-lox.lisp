@@ -18,7 +18,7 @@
     (loop do (progn 
                (format t "~&> ")
                (finish-output)
-               (let ((line (read-line)))
+               (let ((line (read-line *standard-input* nil nil)))
                  (when (or (null line) (string-equal line "")) (return))
                  (run line :env environment)
                  (setf *had-error* nil))))))
