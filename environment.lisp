@@ -1,9 +1,16 @@
 (in-package :common-lox)
 
 (defclass environment () 
-  ((env-values 
-    :initform (serapeum:dict )
+  ((enclosing 
+     :initform nil
+     :initarg :enclosing
+     :reader enclosing)
+   (env-values 
+    :initform (serapeum:dict)
     :accessor env-values)))
+
+(defun new-environment (&optional (enclosing nil))
+  (make-instance 'environment :enclosing enclosing))
 
 (defmethod define ((env environment) name value)
   (setf (gethash name (env-values env)) value))
@@ -11,18 +18,16 @@
 (defmethod assign ((env environment) name value)
   (multiple-value-bind (_ foundp) (gethash (lexeme name) (env-values env))
     (declare (ignore _))
-    (if foundp 
-        (setf (gethash (lexeme name) (env-values env)) value)
-        (error 'runtime-error
-               :token name
-               :message (format nil "Undefined variable '~a'." (lexeme name))))))
+    (cond (foundp (setf (gethash (lexeme name) (env-values env)) value))
+          ((enclosing env) (assign (enclosing env) name value))
+          (t (error 'runtime-error
+                    :token name
+                    :message (format nil "Undefined variable '~a'." (lexeme name)))))))
 
 (defmethod getValue ((env environment) name)
   (multiple-value-bind (value foundp) (gethash (lexeme name) (env-values env))
-    (if foundp 
-        value
-        ; throws a runtime-error here but it looks a little different than 
-        ; the one I may have defined
-        (error 'runtime-error 
-               :token name 
-               :message (format nil "Undefined variable '~a'." (lexeme name))))))
+    (cond (foundp value)
+          ((enclosing env) (getValue (enclosing env) name))
+          (t (error 'runtime-error 
+                    :token name 
+                    :message (format nil "Undefined variable '~a'." (lexeme name)))))))

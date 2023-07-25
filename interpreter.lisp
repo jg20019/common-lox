@@ -1,7 +1,7 @@
 (in-package #:common-lox)
 
 (defclass interpreter ()
-  ((environment :initform (make-instance 'environment) 
+  ((environment :initform (new-environment) 
                 :initarg :environment
                 :accessor environment)))
 
@@ -14,6 +14,18 @@
 
 (defun interpreter () 
   (make-instance 'interpreter))
+
+(defmethod evaluate ((interpreter interpreter) (stmt block-stmt))
+  (execute-block interpreter (statements stmt) (new-environment (environment interpreter))))
+
+(defun execute-block (interpreter statements environment)
+  (let ((previous (environment interpreter))) ; save reference to enclosing environment
+    (unwind-protect 
+      (progn 
+        (setf (environment interpreter) environment) ; set the interpreter to environment for scope
+        (dolist (statement statements)
+          (evaluate interpreter statement))) ; evaluate statements in this scope (environment comes from the interpreter)
+      (setf (environment interpreter) previous)))) ; restore the environment to enclosing environment
 
 (defmethod evaluate ((interpreter interpreter) (stmt expression-stmt))
   (evaluate interpreter (expression stmt)))

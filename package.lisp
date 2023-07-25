@@ -35,6 +35,8 @@
     :var-stmt
     :name
     :initializer
+    :block-stmt
+    :statements
     
     ; tokens
     :token* ; named this way to avoid conflict with generic method on runtime error
@@ -42,6 +44,11 @@
     :token-type
     :literal
     :line
+
+    ; environment
+    :new-environment
+    :enclosing
+    :env-values
     
     :while))
 

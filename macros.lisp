@@ -51,7 +51,7 @@
        (make-instance ',cls-name ,@(loop for field in field-names appending (list (sym-keyword field) field))))))
 
 
-(defmacro define-ast (base-class &rest asts) 
+(defmacro define-ast-nodes (base-class &rest asts) 
   "Generate a base class and classes representing AST"
   `(progn 
      (defclass ,base-class () ())

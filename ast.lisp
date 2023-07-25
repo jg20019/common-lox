@@ -1,6 +1,6 @@
 (in-package #:common-lox)
 
-(define-ast 
+(define-ast-nodes 
   expr
   (assign (token name) (expr value))
   (binary (expr left) (token operator) (expr right))
@@ -9,8 +9,9 @@
   (unary (token operator) (expr right))
   (variable (token name)))
 
-(define-ast 
+(define-ast-nodes
   stmt
+  (block statements)
   (expression (expr expression))
   (print (expr expression))
   (var (token name) (expr initializer)))

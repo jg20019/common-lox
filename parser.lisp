@@ -29,6 +29,7 @@
 
 (defmethod statement ((parser parser))
   (cond ((match parser :print) (print-statement parser))
+        ((match parser :left-brace) (block-stmt :statements (parse-block parser)))
         (t (expression-statement parser))))
 
 (defmethod print-statement ((parser parser))
@@ -49,6 +50,14 @@
   (let ((expr (expression parser)))
     (consume parser :semicolon "Expect ';' after expression")
     (expression-stmt :expression expr)))
+
+(defmethod parse-block ((parser parser))
+  (let (statements)
+    (while (and (not (check parser :right-brace))
+                (not (at-end-p parser)))
+      (push (parse-declaration parser) statements))
+    (consume parser :right-brace "Expect '}' after block.")
+    (nreverse statements)))
 
 (defmethod assignment ((parser parser)) 
   (let ((expr (equality parser)))
