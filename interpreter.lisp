@@ -30,6 +30,14 @@
 (defmethod evaluate ((interpreter interpreter) (stmt expression-stmt))
   (evaluate interpreter (expression stmt)))
 
+(defmethod evaluate ((interpreter interpreter) (stmt if-stmt))
+  (with-slots (if-condition then-branch else-branch) stmt
+    (if (evaluate interpreter if-condition)
+        (evaluate interpreter then-branch)
+        (if else-branch 
+            (evaluate interpreter else-branch)))
+    nil))
+
 (defmethod evaluate ((interpreter interpreter) (stmt print-stmt))
   (let ((value (evaluate interpreter (expression stmt))))
     (format t "~a~%" (stringify value))))
@@ -48,6 +56,13 @@
 
 (defmethod evaluate ((interpreter interpreter) (expr literal-expr)) 
   (value expr))
+
+(defmethod evaluate ((interpreter interpreter) (expr logical-expr))
+  (with-slots (left operator right) expr
+    (let ((value (evaluate interpreter left)))
+      (cond ((and (equal (token-type operator) :or) value) value)
+            ((and (equal (token-type operator) :and) (not value)) value)
+            (t (evaluate interpreter right))))))
 
 (defmethod evaluate ((interpreter interpreter) (expr grouping-expr))
   (evaluate interpreter (expression  expr)))

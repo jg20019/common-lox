@@ -26,12 +26,18 @@
     :literal-expr
     :value
 
+    :logical-expr
+
     :unary-expr
     :variable-expr
 
     ; statements
     :print-stmt
     :expression-stmt
+    :if-stmt
+    :if-condition
+    :then-branch
+    :else-branch
     :var-stmt
     :name
     :initializer

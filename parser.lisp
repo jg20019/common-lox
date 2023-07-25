@@ -30,7 +30,21 @@
 (defmethod statement ((parser parser))
   (cond ((match parser :print) (print-statement parser))
         ((match parser :left-brace) (block-stmt :statements (parse-block parser)))
+        ((match parser :if) (if-statement parser))
         (t (expression-statement parser))))
+
+(defmethod if-statement ((parser parser))
+  (consume parser :left-paren "Expect '(' after 'if'.")
+  (let ((condition (expression parser)))
+    (consume parser :right-paren "Expect ')' after if condition.")
+    (let ((then-branch (statement parser))
+          else-branch)
+      (when (match parser :else)
+        (setf else-branch (statement parser)))
+
+      (if-stmt :if-condition condition 
+               :then-branch then-branch 
+               :else-branch else-branch))))
 
 (defmethod print-statement ((parser parser))
   (let ((value (expression parser)))
@@ -60,7 +74,7 @@
     (nreverse statements)))
 
 (defmethod assignment ((parser parser)) 
-  (let ((expr (equality parser)))
+  (let ((expr (logical-or parser)))
     (when (match parser :equal)
       (let ((equals (previous parser))
             (value (assignment parser)))
@@ -68,6 +82,22 @@
           (let ((name (name expr)))
             (return-from assignment (assign-expr :name name :value value))))
         (error "Invalid assignment target")))
+    expr))
+
+(defmethod logical-or ((parser parser))
+  (let ((expr (logical-and parser)))
+    (while (match parser :or)
+      (let ((operator (previous parser))
+            (right (logical-and parser)))
+        (setf expr (logical-expr :left expr :operator operator :right right))))
+    expr))
+
+(defmethod logical-and ((parser parser))
+  (let ((expr (equality parser)))
+    (while (match parser :and)
+      (let ((operator (previous parser))
+            (right (equality parser)))
+        (setf expr (logical-expr :left expr :operator operator :right right))))
     expr))
 
 (defmethod equality ((parser parser))
