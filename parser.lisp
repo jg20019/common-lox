@@ -30,9 +30,45 @@
 (defmethod statement ((parser parser))
   (cond ((match parser :print) (print-statement parser))
         ((match parser :left-brace) (block-stmt :statements (parse-block parser)))
+        ((match parser :for) (for-statement parser))
         ((match parser :if) (if-statement parser))
         ((match parser :while) (while-statement parser))
         (t (expression-statement parser))))
+
+(defmethod for-statement ((parser parser))
+  (consume parser :left-paren "Expect '(' after for.")
+  (let (initializer for-condition increment body)
+    (setf initializer (cond ((match parser :semicolon) nil)
+                            ((match parser :var) (var-declaration parser))
+                            (t (expression-statement parser))))
+
+    (setf for-condition (if (not (check parser :semicolon))
+                            (expression parser)
+                            nil))
+    (consume parser :semicolon "Expect ';' after loop condition")
+
+    (setf increment (if (not (check parser :right-paren))
+                        (expression parser)
+                        nil))
+    (consume parser :right-paren "Expect ')' after for clauses.")
+
+    (setf body (statement parser))
+
+    (when increment 
+      (setf body 
+            (block-stmt 
+              :statements 
+              (list body (expression-stmt :expression increment)))))
+
+   
+    (when (null for-condition)
+      (setf for-condition (literal-expr :value t)))
+    (setf body (while-stmt :while-condition for-condition :body body))
+    
+    (when initializer
+      (setf body (block-stmt 
+                   :statements
+                   (list initializer body))))))
 
 (defmethod if-statement ((parser parser))
   (consume parser :left-paren "Expect '(' after 'if'.")
