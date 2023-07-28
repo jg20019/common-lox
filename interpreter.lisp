@@ -49,6 +49,11 @@
     (define (environment interpreter) (lexeme (name stmt)) value)
     nil))
 
+(defmethod evaluate ((interpreter interpreter) (stmt while-stmt))
+  (with-slots (while-condition body) stmt
+    (while (evaluate interpreter while-condition)
+      (evaluate interpreter body))))
+
 (defmethod evaluate ((interpreter interpreter) (expr assign-expr))
   (let ((value (evaluate interpreter (value expr))))
     (assign (environment interpreter) (name expr) value)

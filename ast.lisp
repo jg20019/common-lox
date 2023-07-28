@@ -16,4 +16,5 @@
   (expression (expr expression))
   (if (expr if-condition) (stmt then-branch) (stmt else-branch))
   (print (expr expression))
-  (var (token name) (expr initializer)))
+  (var (token name) (expr initializer))
+  (while (expr while-condition) (stmt body)))

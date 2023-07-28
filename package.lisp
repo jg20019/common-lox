@@ -43,6 +43,9 @@
     :initializer
     :block-stmt
     :statements
+    :while-stmt
+    :while-condition
+    :body
     
     ; tokens
     :token* ; named this way to avoid conflict with generic method on runtime error

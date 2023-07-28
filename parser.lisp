@@ -31,6 +31,7 @@
   (cond ((match parser :print) (print-statement parser))
         ((match parser :left-brace) (block-stmt :statements (parse-block parser)))
         ((match parser :if) (if-statement parser))
+        ((match parser :while) (while-statement parser))
         (t (expression-statement parser))))
 
 (defmethod if-statement ((parser parser))
@@ -59,6 +60,13 @@
 
     (consume parser :semicolon "Expect ';' after variable declaration.")
     (var-stmt :name name :initializer initializer)))
+
+(defmethod while-statement ((parser parser))
+  (consume parser :left-paren "Expect '(' after while.")
+  (let ((condition (expression parser)))
+    (consume parser :right-paren "Expect ')' after condition.")
+    (let ((body (statement parser)))
+      (while-stmt :while-condition condition :body body))))
 
 (defmethod expression-statement ((parser parser))
   (let ((expr (expression parser)))
