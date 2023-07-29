@@ -9,8 +9,8 @@
     (read-from-string (concatenate 'string a-str "-" b-str))))
 
 (defun sym-keyword (sym)
-  "Convert sym to keyword 
-
+  "Convert sym to keyword. 
+   
    (sym-keyword 'hello) => :hello"
   (read-from-string (concatenate 'string ":" (string-downcase (symbol-name sym)))))
 
@@ -47,19 +47,52 @@
   (if (listp field-desc) (second field-desc) field-desc))
 
   (defun create-constructor (cls-name field-names)
+    "Create a constructor function that matches cls-name. 
+     field-names become keyword parameters."
     `(defun ,cls-name (&key ,@field-names)
        (make-instance ',cls-name ,@(loop for field in field-names appending (list (sym-keyword field) field))))))
 
 
-(defmacro define-ast-nodes (base-class &rest asts) 
-  "Generate a base class and classes representing AST"
+(defmacro define-ast-nodes (base-class &rest subclass-specifiers) 
+  "This toplevel macro defines an abstract class named BASE-CLASS and a collection of 
+   concrete subclasses to form a disjoint union of types. This is similar to defining an 
+   algebraic data type.
+
+   In addition to defining classes, simple constructor functions are defined as well, whcih share
+   the same name of the classes.
+   
+   The syntax is 
+       (define-ast-nodes <base-class> <subclass-specifier>*)
+   where <subclass-specifier> is a list 
+       (<name> <field-name>*) 
+   so that the subclass <name>-<base-class> will contain slots named <field-name>. 
+   <field-name> can be a symbol representing the name of the field or a list 
+       (<type> <name>)
+   specifying that a field has a given type. 
+   Whether this is enforced is implementation dependent.
+
+   Functions that look like
+       (defun <name>-<base-class> (&key <field-name>...) ...)
+   will be created which can be used to construct the values of each respective subclass.
+
+   An example for a set of classes representing expressions might be:
+
+   (define-ast-nodes 
+     expr
+     (binary (expr left) (token operator) (expr right)
+     (literal value))
+
+   Will create classes EXPR, BINARY-EXPR, and LITERAL-EXPR. 
+   It will create a function #'BINARY-EXPR which takes keyword arguments left, operator, and right 
+   and a function #'LITERAL-EXPR which takes a keyword argument value.
+   "
   `(progn 
      (defclass ,base-class () ())
 
-     ,@(loop for ast in asts appending 
-             (let ((clsname (join-symbols (first ast) base-class)))
-               (list (create-class clsname base-class ast)
-                     (create-constructor clsname (mapcar #'field-name (rest ast))))))))
+     ,@(loop for spec in subclass-specifiers appending 
+             (let ((clsname (join-symbols (first spec) base-class)))
+               (list (create-class clsname base-class spec)
+                     (create-constructor clsname (mapcar #'field-name (rest spec))))))) )
 
 (defmacro while (predicate &body body)
   `(loop while ,predicate do (progn ,@body)))
