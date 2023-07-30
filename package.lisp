@@ -19,6 +19,11 @@
     :left 
     :right
     :operator
+
+    :call-expr
+    :callee
+    :paren
+    :arguments
     
     :grouping-expr
     :expression

@@ -4,6 +4,7 @@
   expr
   (assign (token name) (expr value))
   (binary (expr left) (token operator) (expr right))
+  (call (expr callee) (token paren) arguments)
   (grouping (expr expression))
   (literal value)
   (logical (expr left) (token operator) (expr right))

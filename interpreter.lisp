@@ -120,6 +120,13 @@
       (:bang-equal (not (equal left right)))
       (:equal-equal (equal left right)))))
 
+(defmethod evaluate ((interpreter interpreter) (expr call-expr))
+  "Evaluate call expression"
+  (with-slots (callee arguments) expr 
+    (setf callee (evaluate interpreter callee))
+    (setf arguments (mapcar (lambda (arg) (evaluate interpreter arg)) arguments))
+    (call callee interpreter arguments)))
+
 (defun check-number-operand (operator operand)
   (unless (numberp operand)
     (error 'runtime-error :token operator :message "Operand must be a number")))

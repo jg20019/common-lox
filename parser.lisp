@@ -177,11 +177,35 @@
     expr))
 
 (defmethod unary ((parser parser))
+  "Parse a unary expression"
   (if (match parser :bang :minus)
       (let ((operator (previous parser))
             (right (unary parser)))
         (unary-expr :operator operator :right right))
-      (primary parser)))
+      (call parser)))
+
+(defmethod call ((parser parser))
+  "Parse a call expression"
+  (let ((expr (primary parser)))
+    (block finish-call-loop 
+        (while t
+            (if (match parser :left-paren)
+                (setf expr (finish-call parser expr))
+                (return-from finish-call-loop expr))))))
+
+(defmethod finish-call ((parser parser) callee)
+  "Finish parsing the rest of the function call including the arguments."
+  (let (arguments paren)
+    (when (not (check parser :right-paren))
+      (push (expression parser) arguments)
+      (while (match parser :comma)
+        ; Limiting arguments to 255. This shouldn't be necessary in SBCL 
+        ; not sure of other implementations
+        (when (>= (length arguments) 255)
+          (lox-error (peek parser) "Can't have more than 255 arguments."))
+        (push (expression parser) arguments)))
+    (setf paren (consume parser :right-paren "Expect ')' after arguments."))
+    (call-expr :callee callee :paren paren :arguments arguments)))
 
 (defmethod primary ((parser parser))
   (cond ((match parser :false) (literal-expr :value nil)) ; nil is false in common lisp
@@ -198,39 +222,49 @@
         (t (error (signal-error (peek parser) "Expect expression")))))
 
 (defmethod match ((parser parser) &rest token-types)
-  (dolist (token-type token-types nil) 
-    (when (check parser token-type)
-      (advance parser)
-      (return t))))
+  "Advances parser if it current token matches one of given token types"
+  (when (some (lambda (token-type)
+                 (check parser token-type))
+              token-types)
+    (advance parser)))
 
 (defmethod consume ((parser parser) token-type message) 
+  "Consume and return token if current token matches token-type.
+   Throws an error with the given message otherwise."
   (if (check parser token-type)
       (advance parser)
       (error (signal-error (peek parser) message))))
 
 (defmethod check ((parser parser) token-type)
+  "Check if the current token matches given token-type"
   (if (at-end-p parser) 
       nil
       (equal token-type (token-type (peek parser)))))
 
 (defmethod advance ((parser parser))
+  "Returns current token and advances parser to the next token"
   (unless (at-end-p parser) (incf (current parser)))
   (previous parser))
 
 (defmethod at-end-p ((parser parser))
+  "Are we out of tokens?"
   (equal (token-type (peek parser)) :eof))
 
 (defmethod peek ((parser parser))
+  "Return current token without advancing parser"
   (aref (tokens parser) (current parser)))
 
 (defmethod previous ((parser parser))
+  "Return the previous token"
   (aref (tokens parser) (1- (current parser))))
 
 (defun signal-error (token message) 
+  "Signals a lox-error and creates a parser-error"
   (lox-error token message)
   (make-condition 'parse-error))
 
 (defmethod synchronize ((parser parser))
+  "Advance parser to the next valid state to resume parsing"
   (advance parser)
   (while (not (at-end-p parser))
     (when (equal (token-type (previous parser)) :semicolon)
